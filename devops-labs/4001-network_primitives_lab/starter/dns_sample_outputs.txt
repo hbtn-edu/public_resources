@@ -1,0 +1,59 @@
+# Synthetic DNS fallback for Network Primitives Lab
+#
+# These excerpts are sanitized teaching examples, not live records. Values use
+# reserved names and documentation address ranges. Read them when outbound DNS
+# or dig +trace is unavailable. Do not treat them as current public DNS data.
+
+## A
+;example.test.                 IN      A
+example.test.          300     IN      A       192.0.2.20
+
+## AAAA
+;example.test.                 IN      AAAA
+example.test.          300     IN      AAAA    2001:db8::20
+
+## MX
+;example.test.                 IN      MX
+example.test.          300     IN      MX      10 mail.example.test.
+
+## NS
+;example.test.                 IN      NS
+example.test.          300     IN      NS      ns1.example.test.
+example.test.          300     IN      NS      ns2.example.test.
+
+## TXT
+;example.test.                 IN      TXT
+example.test.          300     IN      TXT     "v=spf1 -all"
+
+## SOA
+;example.test.                 IN      SOA
+example.test.          300     IN      SOA     ns1.example.test. hostmaster.example.test. 2026080501 3600 900 1209600 300
+
+## Simplified iterative trace
+.                       518400  IN      NS      a.root-servers.test.
+test.                   172800  IN      NS      ns.test-registry.test.
+example.test.           300     IN      NS      ns1.example.test.
+example.test.           300     IN      A       192.0.2.20
+
+## Recursive resolver observation A
+;; SERVER: 192.0.2.53#53(192.0.2.53)
+;; Query time: 18 msec
+example.test.           287     IN      A       192.0.2.20
+
+## Recursive resolver observation B
+;; SERVER: 198.51.100.53#53(198.51.100.53)
+;; Query time: 43 msec
+example.test.           300     IN      A       192.0.2.20
+
+## Second TTL observation
+;; Query time: 2 msec
+example.test.           277     IN      A       192.0.2.20
+
+## PTR
+;10.2.0.192.in-addr.arpa.      IN      PTR
+10.2.0.192.in-addr.arpa. 300   IN      PTR     host.example.test.
+
+## Truncated UDP response indicator
+;; flags: qr tc rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+# The tc flag means the UDP response was truncated; a client can retry over TCP.
+
