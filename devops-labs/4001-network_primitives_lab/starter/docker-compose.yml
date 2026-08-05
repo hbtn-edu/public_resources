@@ -1,0 +1,37 @@
+# Project 101, Task 4 - Option B: generate your own capture locally.
+#
+# The supplied `reference_capture.pcap` is the normal path and the one the
+# Task 4 quiz is written against. This stack exists as the fallback: it puts a
+# real HTTP server on 127.0.0.1:8080 so you can capture your own traffic on
+# the loopback interface, on your own machine only.
+#
+#   docker compose up -d
+#   curl http://localhost:8080          # should print the nginx welcome page
+#   docker compose down
+#
+# Capture it with (in a second terminal, while curl runs):
+#   sudo tcpdump -i lo -nn -w local_capture.pcap 'port 8080'
+#
+# Note: your own capture will have different ports, window sizes and packet
+# counts, so answer the Task 4 quiz from the supplied capture.
+#
+# There is no top-level `version:` key on purpose - Compose v2 ignores it and
+# warns that it is obsolete.
+
+services:
+  web:
+    # Pinned by exact patch version AND digest: the point of this project is
+    # that the capture is reproducible, and "whatever nginx:alpine is today"
+    # is not reproducible.
+    image: nginx:1.27.4-alpine@sha256:4ff102c5d78d254a6f0da062b3cf39eaf07f01eec0927fd21e219d0af8bc0591
+    container_name: netlab-web
+    # Bound to 127.0.0.1 so nothing on your network can reach it. Task 3 asks
+    # you to reason about exactly this choice.
+    ports:
+      - "127.0.0.1:8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
